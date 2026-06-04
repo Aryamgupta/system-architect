@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Outfit:wght@100..900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  /* Default Cyan Theme (Deep Obsidian) */
+  --color-bg: #0b0c10;
+  --color-surface: #121824;
+  --color-surface-hover: #1b2436;
+  --color-primary: #00f2fe;
+  --color-secondary: #4facfe;
+  --color-highlight: #66fcf1;
+  --color-glow: rgba(0, 242, 254, 0.2);
+  --color-text: #e2e8f0;
+  --color-text-dim: #94a3b8;
+  --color-border: rgba(0, 242, 254, 0.2);
+  --color-border-hover: rgba(0, 242, 254, 0.5);
+  --color-grid: rgba(0, 242, 254, 0.03);
+}
+
+/* Theme variations applied via data-theme on body */
+body[data-theme="emerald"] {
+  --color-bg: #070c0a;
+  --color-surface: #0e1612;
+  --color-surface-hover: #16241d;
+  --color-primary: #00ff87;
+  --color-secondary: #60efff;
+  --color-highlight: #a3ffcc;
+  --color-glow: rgba(0, 255, 135, 0.2);
+  --color-border: rgba(0, 255, 135, 0.2);
+  --color-border-hover: rgba(0, 255, 135, 0.5);
+  --color-grid: rgba(0, 255, 135, 0.03);
+}
+
+body[data-theme="violet"] {
+  --color-bg: #0b0712;
+  --color-surface: #130d21;
+  --color-surface-hover: #1d1432;
+  --color-primary: #d946ef;
+  --color-secondary: #8b5cf6;
+  --color-highlight: #f472b6;
+  --color-glow: rgba(217, 70, 239, 0.2);
+  --color-border: rgba(217, 70, 239, 0.2);
+  --color-border-hover: rgba(217, 70, 239, 0.5);
+  --color-grid: rgba(217, 70, 239, 0.03);
+}
+
+body[data-theme="amber"] {
+  --color-bg: #0c0702;
+  --color-surface: #180e04;
+  --color-surface-hover: #241506;
+  --color-primary: #f59e0b;
+  --color-secondary: #ef4444;
+  --color-highlight: #fcd34d;
+  --color-glow: rgba(245, 158, 11, 0.2);
+  --color-border: rgba(245, 158, 11, 0.2);
+  --color-border-hover: rgba(245, 158, 11, 0.5);
+  --color-grid: rgba(245, 158, 11, 0.03);
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  user-select: none;
+  transition: background-color 0.5s ease-in-out, color 0.3s ease;
+}
+
+/* Cyberpunk Scanner Grid Background */
+.scanner-grid {
+  background-image: 
+    linear-gradient(to right, var(--color-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* CRT Scanlines and Flicker Effects */
+.scanlines::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+  z-index: 99;
+  opacity: 0.45;
+}
+
+.scanlines-high::after {
+  opacity: 0.6;
+}
+
+.scanlines-low::after {
+  opacity: 0.15;
+}
+
+/* Sub-panel HUD styled box */
+.hud-panel {
+  background-color: rgba(var(--color-surface), 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 10px var(--color-glow);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hud-panel:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 0 10px var(--color-glow), inset 0 0 15px var(--color-glow);
+}
+
+.hud-header {
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  text-shadow: 0 0 5px var(--color-primary);
+}
+
+.neon-text-glow {
+  text-shadow: 0 0 8px var(--color-glow), 0 0 15px var(--color-primary);
+}
+
+.neon-border-glow {
+  box-shadow: 0 0 10px var(--color-border);
+}
+
+/* Custom Scrollbar for list contents */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+.pulse-slow {
+  animation: pulse-slow 3s infinite ease-in-out;
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  animation: spin-slow 20s infinite linear;
+}
+
+@keyframes scan-v {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanline-v {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to bottom, transparent, var(--color-primary), transparent);
+  animation: scan-v 8s infinite linear;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Hide scrollbars but keep scrolling active */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
