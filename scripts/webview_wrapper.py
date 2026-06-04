@@ -82,6 +82,23 @@ def setup_gtk_wallpaper(window):
         print(f"[-] Could not apply GTK wallpaper hints: {e}")
         print("[-] Wallpaper will run in standard borderless fullscreen mode.")
 
+def wait_for_backend(url, timeout=30):
+    import urllib.request
+    print(f"[+] Waiting for backend server at {url}...")
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        try:
+            # Try connecting to the root endpoint
+            with urllib.request.urlopen(url, timeout=2) as response:
+                if response.status == 200:
+                    print("[+] Backend server is ready!")
+                    return True
+        except Exception:
+            pass
+        time.sleep(0.5)
+    print("[-] Warning: Backend server did not respond in time. Starting client anyway.")
+    return False
+
 def main():
     try:
         import webview
@@ -109,6 +126,9 @@ def main():
         sys.exit(1)
 
     print(f"[+] Starting Wallpaper Client loading: {args.url}")
+
+    # Synchronize startup: Wait for backend to be online before opening GUI window
+    wait_for_backend(args.url)
 
     # Create the borderless window
     window = webview.create_window(
