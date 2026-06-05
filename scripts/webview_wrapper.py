@@ -25,6 +25,7 @@ import ctypes
 # ── WebKit2GTK rendering fixes ──────────────────────────────────────────────
 os.environ["WEBKIT_DISABLE_DMABUF_RENDERER"] = "1"   # prevents blank/WebGL bugs
 os.environ["PYWEBVIEW_GUI"] = "gtk"
+os.environ["GDK_BACKEND"] = "x11"                    # Forces X11/XWayland so desktop hints work on Wayland too
 
 
 # ── X11 / EWMH helpers ──────────────────────────────────────────────────────

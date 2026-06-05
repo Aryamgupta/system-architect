@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="neon-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="50%" stop-color="#7000ff" />
+      <stop offset="100%" stop-color="#ff007b" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Outer Cyber Hexagon -->
+  <polygon points="50,5 90,28 90,72 50,95 10,72 10,28" 
+           fill="none" 
+           stroke="url(#neon-glow)" 
+           stroke-width="3" 
+           filter="url(#glow)" />
+           
+  <!-- Inner Segmented Ring -->
+  <circle cx="50" cy="50" r="30" 
+          fill="none" 
+          stroke="#00f0ff" 
+          stroke-width="1.5" 
+          stroke-dasharray="15 8 22 5" 
+          opacity="0.8" />
+          
+  <!-- Core Processor Square -->
+  <rect x="38" y="38" width="24" height="24" rx="4"
+        fill="#0b0f19" 
+        stroke="#00f0ff" 
+        stroke-width="2" 
+        filter="url(#glow)" />
+        
+  <!-- CPU Core Center Node -->
+  <circle cx="50" cy="50" r="5" fill="url(#neon-glow)" />
+
+  <!-- Circuit nodes radiating outwards -->
+  <line x1="38" y1="50" x2="25" y2="50" stroke="#00f0ff" stroke-width="1.5" />
+  <circle cx="23" cy="50" r="2" fill="#00f0ff" />
+
+  <line x1="62" y1="50" x2="75" y2="50" stroke="#00f0ff" stroke-width="1.5" />
+  <circle cx="77" cy="50" r="2" fill="#00f0ff" />
+
+  <line x1="50" y1="38" x2="50" y2="25" stroke="#00f0ff" stroke-width="1.5" />
+  <circle cx="50" cy="23" r="2" fill="#00f0ff" />
+
+  <line x1="50" y1="62" x2="50" y2="75" stroke="#00f0ff" stroke-width="1.5" />
+  <circle cx="50" cy="77" r="2" fill="#00f0ff" />
+</svg>
