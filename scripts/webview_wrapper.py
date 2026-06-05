@@ -271,7 +271,7 @@ def main():
     # GNOME taskbar/dock.  Instead we set width/height = screen dimensions and
     # let _NET_WM_WINDOW_TYPE_DESKTOP handle layering (stays below everything).
     window = webview.create_window(
-        title            = "NexusCore Wallpaper",
+        title            = "System Architect Wallpaper",
         url              = args.url,
         width            = args.width,
         height           = args.height,

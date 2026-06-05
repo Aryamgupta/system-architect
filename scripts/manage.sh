@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ╔══════════════════════════════════════════════════════════╗
-# ║       NexusCore — Management Script                      ║
+# ║       System Architect — Management Script               ║
 # ║                                                          ║
 # ║  Usage:  ./scripts/manage.sh <command>                   ║
 # ║                                                          ║
@@ -32,7 +32,7 @@ SERVICE_FILE="$HOME/.config/systemd/user/$SERVICE_NAME"
 AUTOSTART_FILE="$HOME/.config/autostart/system-architect-client.desktop"
 PYTHON_BIN="$PROJECT_ROOT/backend/venv/bin/python"
 WRAPPER="$PROJECT_ROOT/scripts/webview_wrapper.py"
-HOSTS_LINE="127.0.0.1 nexus.core"
+HOSTS_LINE="127.0.0.1 system-architect"
 PORT=9190
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -49,14 +49,14 @@ confirm() {
 
 # ── Command: start ────────────────────────────────────────────────────────────
 cmd_start() {
-    section "Starting NexusCore"
+    section "Starting System Architect"
 
     if systemctl --user is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
         warn "Backend service is already running."
     else
         info "Starting backend systemd service..."
         systemctl --user start "$SERVICE_NAME"
-        ok "Backend started → http://nexus.core:$PORT  |  http://localhost:$PORT"
+        ok "Backend started → http://system-architect:$PORT  |  http://localhost:$PORT"
     fi
 
     # Brief wait for backend to be ready before launching webview
@@ -73,14 +73,14 @@ cmd_start() {
         warn "Webview is already running (PID: $(pgrep -f webview_wrapper.py))."
     else
         info "Launching desktop webview wallpaper..."
-        nohup "$PYTHON_BIN" "$WRAPPER" > /tmp/nexuscore-webview.log 2>&1 &
-        ok "Webview launched (PID: $!). Log: /tmp/nexuscore-webview.log"
+        nohup "$PYTHON_BIN" "$WRAPPER" > /tmp/system-architect-webview.log 2>&1 &
+        ok "Webview launched (PID: $!). Log: /tmp/system-architect-webview.log"
     fi
 }
 
 # ── Command: stop ─────────────────────────────────────────────────────────────
 cmd_stop() {
-    section "Stopping NexusCore"
+    section "Stopping System Architect"
 
     # Kill webview process
     if pgrep -f "webview_wrapper.py" > /dev/null 2>&1; then
@@ -102,7 +102,7 @@ cmd_stop() {
 
 # ── Command: restart ──────────────────────────────────────────────────────────
 cmd_restart() {
-    section "Restarting NexusCore"
+    section "Restarting System Architect"
 
     info "Restarting backend service..."
     systemctl --user daemon-reload
@@ -125,17 +125,17 @@ cmd_restart() {
         sleep 1
     done
 
-    nohup "$PYTHON_BIN" "$WRAPPER" > /tmp/nexuscore-webview.log 2>&1 &
+    nohup "$PYTHON_BIN" "$WRAPPER" > /tmp/system-architect-webview.log 2>&1 &
     ok "Webview relaunched (PID: $!)"
 
     echo ""
-    ok "NexusCore restarted successfully."
-    echo -e "   Dashboard: ${CYAN}http://nexus.core:$PORT${NC}  |  ${CYAN}http://localhost:$PORT${NC}"
+    ok "System Architect restarted successfully."
+    echo -e "   Dashboard: ${CYAN}http://system-architect:$PORT${NC}  |  ${CYAN}http://localhost:$PORT${NC}"
 }
 
 # ── Command: status ───────────────────────────────────────────────────────────
 cmd_status() {
-    section "NexusCore Status"
+    section "System Architect Status"
 
     # Backend service
     echo -e "\n${BOLD}Backend Service${NC}"
@@ -155,10 +155,10 @@ cmd_status() {
     else
         err "http://127.0.0.1:$PORT          →  ${RED}UNREACHABLE${NC}"
     fi
-    if curl -sf "http://nexus.core:$PORT/" > /dev/null 2>&1; then
-        ok "http://nexus.core:$PORT        →  ${GREEN}REACHABLE${NC}"
+    if curl -sf "http://system-architect:$PORT/" > /dev/null 2>&1; then
+        ok "http://system-architect:$PORT        →  ${GREEN}REACHABLE${NC}"
     else
-        warn "http://nexus.core:$PORT        →  not reachable (hosts entry missing?)"
+        warn "http://system-architect:$PORT        →  not reachable (hosts entry missing?)"
     fi
 
     # Webview process
@@ -173,9 +173,9 @@ cmd_status() {
     # /etc/hosts
     echo -e "\n${BOLD}Local Domain${NC}"
     if grep -qF "$HOSTS_LINE" /etc/hosts 2>/dev/null; then
-        ok "nexus.core  →  ${GREEN}registered in /etc/hosts${NC}"
+        ok "system-architect  →  ${GREEN}registered in /etc/hosts${NC}"
     else
-        warn "nexus.core  →  NOT in /etc/hosts (run: echo '$HOSTS_LINE' | sudo tee -a /etc/hosts)"
+        warn "system-architect  →  NOT in /etc/hosts (run: echo '$HOSTS_LINE' | sudo tee -a /etc/hosts)"
     fi
 
     # Autostart
@@ -191,19 +191,19 @@ cmd_status() {
 
 # ── Command: logs ─────────────────────────────────────────────────────────────
 cmd_logs() {
-    section "NexusCore Backend Logs  (Ctrl+C to exit)"
+    section "System Architect Backend Logs  (Ctrl+C to exit)"
     journalctl --user -u "$SERVICE_NAME" -f --no-hostname --output=short-iso
 }
 
 # ── Command: uninstall ────────────────────────────────────────────────────────
 cmd_uninstall() {
-    section "Uninstalling NexusCore"
+    section "Uninstalling System Architect"
 
     echo -e "${RED}${BOLD}"
     echo "  This will remove:"
     echo "    • The systemd backend service"
     echo "    • The GNOME autostart desktop entry"
-    echo "    • The nexus.core entry from /etc/hosts"
+    echo "    • The system-architect entry from /etc/hosts"
     echo "    • backend/venv/ (Python virtualenv)"
     echo "    • frontend/dist/ (compiled assets)"
     echo "    • frontend/node_modules/ (npm packages)"
@@ -236,13 +236,13 @@ cmd_uninstall() {
         warn "Autostart entry not found, skipping."
     fi
 
-    # 4. Remove nexus.core from /etc/hosts
-    info "Removing nexus.core from /etc/hosts (requires sudo)..."
+    # 4. Remove system-architect from /etc/hosts
+    info "Removing system-architect from /etc/hosts (requires sudo)..."
     if grep -qF "$HOSTS_LINE" /etc/hosts 2>/dev/null; then
         sudo sed -i "\|$HOSTS_LINE|d" /etc/hosts
         ok "Removed '$HOSTS_LINE' from /etc/hosts."
     else
-        warn "nexus.core was not in /etc/hosts, skipping."
+        warn "system-architect was not in /etc/hosts, skipping."
     fi
 
     # 5. Remove Python venv
@@ -277,14 +277,14 @@ cmd_uninstall() {
     if confirm "Also delete the entire project directory ($PROJECT_ROOT)?"; then
         info "Removing project directory..."
         rm -rf "$PROJECT_ROOT"
-        ok "Project directory removed. NexusCore is fully uninstalled."
+        ok "Project directory removed. System Architect is fully uninstalled."
     else
         ok "Project source files kept at: $PROJECT_ROOT"
         info "To reinstall later, run: ./scripts/install.sh"
     fi
 
     echo ""
-    echo -e "${GREEN}${BOLD}=== NexusCore uninstalled successfully ===${NC}"
+    echo -e "${GREEN}${BOLD}=== System Architect uninstalled successfully ===${NC}"
 }
 
 # ── Entry point ───────────────────────────────────────────────────────────────
@@ -298,7 +298,7 @@ case "$COMMAND" in
     logs)      cmd_logs      ;;
     uninstall) cmd_uninstall ;;
     *)
-        echo -e "${BOLD}NexusCore Management Script${NC}"
+        echo -e "${BOLD}System Architect Management Script${NC}"
         echo ""
         echo -e "  Usage: ${CYAN}./scripts/manage.sh <command>${NC}"
         echo ""
@@ -308,7 +308,7 @@ case "$COMMAND" in
         echo -e "    ${GREEN}restart${NC}    Restart backend service and wallpaper"
         echo -e "    ${GREEN}status${NC}     Show backend, webview, domain, and autostart status"
         echo -e "    ${GREEN}logs${NC}       Stream live backend service logs"
-        echo -e "    ${RED}uninstall${NC}  Remove all NexusCore components from this system"
+        echo -e "    ${RED}uninstall${NC}  Remove all System Architect components from this system"
         echo ""
         ;;
 esac

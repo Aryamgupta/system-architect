@@ -160,7 +160,7 @@ export const useTelemetry = () => {
       }
 
       // Derive WebSocket URL from current page location so it works on
-      // localhost, nexus.core, or any custom hostname without hardcoding.
+      // localhost, system-architect, or any custom hostname without hardcoding.
       const proto = window.location.protocol === "https:" ? "wss" : "ws";
       const host = window.location.hostname;
       const port = window.location.port || "9190";

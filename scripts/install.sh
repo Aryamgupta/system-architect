@@ -70,20 +70,20 @@ systemctl --user daemon-reload
 systemctl --user enable system-architect-wallpaper.service
 systemctl --user restart system-architect-wallpaper.service
 
-# 7. Add nexus.core to /etc/hosts (requires sudo) so the dashboard is reachable at http://nexus.core:9190
-HOSTS_LINE="127.0.0.1 nexus.core"
+# 7. Add system-architect to /etc/hosts (requires sudo) so the dashboard is reachable at http://system-architect:9190
+HOSTS_LINE="127.0.0.1 system-architect"
 if ! grep -qF "$HOSTS_LINE" /etc/hosts 2>/dev/null; then
-    echo -e "[+] Adding ${GREEN}nexus.core${NC} → 127.0.0.1 to /etc/hosts (requires sudo)..."
+    echo -e "[+] Adding ${GREEN}system-architect${NC} → 127.0.0.1 to /etc/hosts (requires sudo)..."
     echo "$HOSTS_LINE" | sudo tee -a /etc/hosts > /dev/null
-    echo -e "[+] ${GREEN}nexus.core${NC} registered."
+    echo -e "[+] ${GREEN}system-architect${NC} registered."
 else
-    echo -e "[+] ${GREEN}nexus.core${NC} already present in /etc/hosts, skipping."
+    echo -e "[+] ${GREEN}system-architect${NC} already present in /etc/hosts, skipping."
 fi
 
 echo -e "${GREEN}=== Installation Completed Successfully! ===${NC}"
 echo -e "Telemetry backend is running on:"
 echo -e "  ${BLUE}http://127.0.0.1:9190${NC}  (direct)"
-echo -e "  ${BLUE}http://nexus.core:9190${NC}  (local domain)"
+echo -e "  ${BLUE}http://system-architect:9190${NC}  (local domain)"
 echo -e "Check service logs with: ${BLUE}journalctl --user -u system-architect-wallpaper.service -f${NC}"
 echo -e ""
 echo -e "To launch the live wallpaper dashboard on your desktop, run:"

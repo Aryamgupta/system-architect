@@ -10,7 +10,7 @@
 
 System Architect replaces your static wallpaper with a fully animated, data-driven dashboard. A lightweight **FastAPI backend** reads kernel interfaces (`/proc`, `/sys`, Docker socket, git) every second and streams telemetry over **WebSocket** to a **React/Vite frontend** rendered by **PyWebView** (GTK/WebKit2). The window is set to the `DESKTOP` WM type — it sits below every application window, behaves like a real wallpaper, and survives workspace switches.
 
-> **No wallpaper setup needed?** The dashboard also runs perfectly as a regular browser tab. Once the backend is running, open any browser and visit `http://nexus.core:9190` or `http://localhost:9190` — no GTK, no PyWebView required. See [Browser-Only Mode](#-browser-only-mode) below.
+> **No wallpaper setup needed?** The dashboard also runs perfectly as a regular browser tab. Once the backend is running, open any browser and visit `http://system-architect:9190` or `http://localhost:9190` — no GTK, no PyWebView required. See [Browser-Only Mode](#-browser-only-mode) below.
 
 ---
 
@@ -264,7 +264,7 @@ system-architect/
 
 ---
 
-## ⚙️ Managing NexusCore
+## ⚙️ Managing System Architect
 
 A single script handles everything after install:
 
@@ -288,7 +288,7 @@ chmod +x scripts/manage.sh
 ✓ webview_wrapper.py process (killed)
 ✓ system-architect-wallpaper.service (stopped, disabled, deleted)
 ✓ ~/.config/autostart/system-architect-client.desktop
-✓ nexus.core entry from /etc/hosts
+✓ system-architect entry from /etc/hosts
 ✓ backend/venv/          (Python virtualenv)
 ✓ frontend/dist/         (compiled assets)
 ✓ frontend/node_modules/ (npm packages)
@@ -336,16 +336,16 @@ You do **not** need the wallpaper setup to use the dashboard. The FastAPI backen
 | URL | Works when |
 |---|---|
 | `http://localhost:9190` | Backend service is running |
-| `http://nexus.core:9190` | After `nexus.core` is added to `/etc/hosts` (done by installer) |
+| `http://system-architect:9190` | After `system-architect` is added to `/etc/hosts` (done by installer) |
 | `http://127.0.0.1:9190` | Always (direct IP) |
 
 ### Manual hosts entry (if not using the installer)
 
 ```bash
-echo '127.0.0.1 nexus.core' | sudo tee -a /etc/hosts
+echo '127.0.0.1 system-architect' | sudo tee -a /etc/hosts
 ```
 
-After this, `http://nexus.core:9190` opens the full NexusCore dashboard in any browser — Chrome, Firefox, etc. The WebSocket automatically connects back to the same host so telemetry streams correctly regardless of the URL used.
+After this, `http://system-architect:9190` opens the full System Architect dashboard in any browser — Chrome, Firefox, etc. The WebSocket automatically connects back to the same host so telemetry streams correctly regardless of the URL used.
 
 ### Why port 9190?
 
@@ -431,7 +431,7 @@ ss -tlnp | grep 9190
 # Test manually
 curl http://127.0.0.1:9190/health
 # or via local domain:
-curl http://nexus.core:9190/health
+curl http://system-architect:9190/health
 ```
 
 ---
