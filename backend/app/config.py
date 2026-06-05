@@ -5,7 +5,7 @@ from typing import List
 class Settings:
     # API configuration
     HOST: str = os.getenv("HOST", "127.0.0.1")
-    PORT: int = int(os.getenv("PORT", "8000"))
+    PORT: int = int(os.getenv("PORT", "9190"))
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     
     # Telemetry streaming interval in seconds

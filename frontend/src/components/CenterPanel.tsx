@@ -72,7 +72,7 @@ const LOG_POOL: Omit<LogEntry, "ts">[] = [
   { level: "INFO", unit: "systemd", msg: "Started user session for aryam" },
   { level: "INFO", unit: "NetworkManager", msg: "wlp3s0: link is connected (DHCP)" },
   { level: "WARN", unit: "thermal", msg: "CPU package temp approaching 90°C" },
-  { level: "INFO", unit: "uvicorn", msg: "Application startup complete on :8000" },
+  { level: "INFO", unit: "uvicorn", msg: "Application startup complete on :9190" },
   { level: "INFO", unit: "dbus", msg: "Activated service com.canonical.Unity" },
   { level: "WARN", unit: "gnome-shell", msg: "Extension 'dash-to-dock' slow startup" },
   { level: "INFO", unit: "tracker", msg: "Indexed 12 new files in ~/Documents" },

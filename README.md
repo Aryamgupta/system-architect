@@ -10,6 +10,8 @@
 
 System Architect replaces your static wallpaper with a fully animated, data-driven dashboard. A lightweight **FastAPI backend** reads kernel interfaces (`/proc`, `/sys`, Docker socket, git) every second and streams telemetry over **WebSocket** to a **React/Vite frontend** rendered by **PyWebView** (GTK/WebKit2). The window is set to the `DESKTOP` WM type — it sits below every application window, behaves like a real wallpaper, and survives workspace switches.
 
+> **No wallpaper setup needed?** The dashboard also runs perfectly as a regular browser tab. Once the backend is running, open any browser and visit `http://nexus.core:9190` or `http://localhost:9190` — no GTK, no PyWebView required. See [Browser-Only Mode](#-browser-only-mode) below.
+
 ---
 
 ## Screenshots
@@ -197,12 +199,12 @@ After running both scripts, the full startup chain on login is:
 ```
 Login
  ├── systemd --user starts system-architect-wallpaper.service
- │     └── uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+ │     └── uvicorn backend.app.main:app --host 127.0.0.1 --port 9190
  │           └── serves /ws/telemetry WebSocket + static frontend
  │
  └── GNOME autostart runs system-architect-client.desktop
        └── backend/venv/bin/python scripts/webview_wrapper.py
-             └── waits for :8000, then opens GTK desktop window
+             └── waits for :9190, then opens GTK desktop window
 ```
 
 No manual steps required after the first setup.
@@ -247,6 +249,7 @@ system-architect/
 │
 ├── scripts/
 │   ├── install.sh                         # One-shot installer
+│   ├── manage.sh                          # Start / stop / restart / uninstall
 │   ├── setup_autostart.sh                 # Creates ~/.config/autostart entry
 │   ├── webview_wrapper.py                 # PyWebView desktop window
 │   └── system-architect-wallpaper.service # Systemd unit template (tokens)
@@ -261,13 +264,46 @@ system-architect/
 
 ---
 
-## Development
+## ⚙️ Managing NexusCore
+
+A single script handles everything after install:
+
+```bash
+# Make executable once
+chmod +x scripts/manage.sh
+```
+
+| Command | What it does |
+|---|---|
+| `./scripts/manage.sh start` | Start backend service + launch desktop wallpaper |
+| `./scripts/manage.sh stop` | Stop backend service + kill webview |
+| `./scripts/manage.sh restart` | Restart both (use after updates) |
+| `./scripts/manage.sh status` | Shows backend, HTTP, webview, hosts, autostart status |
+| `./scripts/manage.sh logs` | Stream live backend logs (Ctrl+C to exit) |
+| `./scripts/manage.sh uninstall` | **Remove everything** from the system |
+
+### What `uninstall` removes
+
+```
+✓ webview_wrapper.py process (killed)
+✓ system-architect-wallpaper.service (stopped, disabled, deleted)
+✓ ~/.config/autostart/system-architect-client.desktop
+✓ nexus.core entry from /etc/hosts
+✓ backend/venv/          (Python virtualenv)
+✓ frontend/dist/         (compiled assets)
+✓ frontend/node_modules/ (npm packages)
+? Project source directory (asks before deleting)
+```
+
+---
+
+## 🛠️ Development
 
 ### Start the backend (with hot-reload)
 
 ```bash
 backend/venv/bin/python -m uvicorn backend.app.main:app \
-  --host 127.0.0.1 --port 8000 --reload
+  --host 127.0.0.1 --port 9190 --reload
 ```
 
 ### Start the frontend dev server
@@ -293,7 +329,31 @@ cd frontend && npm run build
 
 ---
 
-## Service Management
+## 🌐 Browser-Only Mode
+
+You do **not** need the wallpaper setup to use the dashboard. The FastAPI backend serves the compiled React frontend as static files. Once the backend service is running, any browser on the same machine can open it:
+
+| URL | Works when |
+|---|---|
+| `http://localhost:9190` | Backend service is running |
+| `http://nexus.core:9190` | After `nexus.core` is added to `/etc/hosts` (done by installer) |
+| `http://127.0.0.1:9190` | Always (direct IP) |
+
+### Manual hosts entry (if not using the installer)
+
+```bash
+echo '127.0.0.1 nexus.core' | sudo tee -a /etc/hosts
+```
+
+After this, `http://nexus.core:9190` opens the full NexusCore dashboard in any browser — Chrome, Firefox, etc. The WebSocket automatically connects back to the same host so telemetry streams correctly regardless of the URL used.
+
+### Why port 9190?
+
+Port `8000` conflicts with many common dev tools (Django, Flask, dbt, Jupyter). `9190` is an uncommonly used port with no well-known service assignments, making it safe to use alongside any typical developer environment.
+
+---
+
+## 🔧 Service Management
 
 ```bash
 # Check backend service status
@@ -359,17 +419,19 @@ Set the DMA-buf renderer workaround (already set in `webview_wrapper.py`):
 WEBKIT_DISABLE_DMABUF_RENDERER=1 backend/venv/bin/python scripts/webview_wrapper.py
 ```
 
-### Backend not responding at `:8000`
+### Backend not responding at `:9190`
 
 ```bash
 # Check if uvicorn is running
 systemctl --user status system-architect-wallpaper.service
 
-# Check what's on port 8000
-ss -tlnp | grep 8000
+# Check what's on port 9190
+ss -tlnp | grep 9190
 
 # Test manually
-curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:9190/health
+# or via local domain:
+curl http://nexus.core:9190/health
 ```
 
 ---

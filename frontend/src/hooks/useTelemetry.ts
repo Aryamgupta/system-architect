@@ -159,7 +159,12 @@ export const useTelemetry = () => {
         clearTimeout(reconnectTimeoutRef.current);
       }
 
-      const wsUrl = "ws://127.0.0.1:8000/ws/telemetry";
+      // Derive WebSocket URL from current page location so it works on
+      // localhost, nexus.core, or any custom hostname without hardcoding.
+      const proto = window.location.protocol === "https:" ? "wss" : "ws";
+      const host = window.location.hostname;
+      const port = window.location.port || "9190";
+      const wsUrl = `${proto}://${host}:${port}/ws/telemetry`;
       console.log(`Connecting to telemetry WebSocket: ${wsUrl}`);
       
       const ws = new WebSocket(wsUrl);

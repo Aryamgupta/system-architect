@@ -251,7 +251,7 @@ def main():
     print(f"[+] Screen resolution detected: {detected_width}x{detected_height}")
 
     parser = argparse.ArgumentParser(description="System Architect Live Wallpaper Client")
-    parser.add_argument("--url",    default="http://127.0.0.1:8000")
+    parser.add_argument("--url",    default="http://127.0.0.1:9190")
     parser.add_argument("--width",  type=int, default=detected_width)
     parser.add_argument("--height", type=int, default=detected_height)
     args = parser.parse_args()
