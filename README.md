@@ -1,153 +1,391 @@
-# 🖥️ System Architect: Cyberpunk Live Wallpaper
+# System Architect — Cyberpunk Live Wallpaper
 
-System Architect is a production-ready Linux desktop live wallpaper designed as a premium, high-tech software-engineering command center. Rather than acting as a standard flat system monitor, it visualizes system telemetry through a dynamic cyberpunk interface, including 3D elements, real-time code/Docker telemetry, and interactive settings.
+> A production-grade Linux desktop live wallpaper that renders your system telemetry as a real-time command center HUD.
 
-Designed for minimal resource impact, the backend queries data directly from Linux kernel filesystems (like sysfs) and processes, while the frontend leverages GPU acceleration and quality scaling to keep CPU usage low.
-
----
-
-## 🌌 Visual Design & Features
-
-*   **Core Telemetry Reactor (WebGL/Three.js)**: A spinning 3D reactor core responsive to hardware metrics:
-    *   **CPU Usage** drives rotation speeds and pulsing frequency.
-    *   **RAM Percentage** drives the glow intensity of the central point lights.
-    *   **Network Bandwidth** streams particle streams across the layout.
-    *   **CPU Temperature** shifts core colors dynamically from cyan/blue to warning amber/red.
-*   **Developer Environment (Left Panel)**: 
-    *   Scans `/proc` to count active terminal windows and detect running IDEs (VS Code, Cursor, JetBrains).
-    *   Checks git status of active projects, displaying branch, commits made today, and uncommitted modifications.
-    *   Inspects Docker socket to report running/total containers and service status.
-*   **Network Mesh (Right Panel)**: Displays an active, animated node topology graph representing socket configurations and updates with real-time transfer speeds and live connection logs.
-*   **Hardware Gauges (Bottom Panel)**: Clean cyberpunk gauges for CPU cores, RAM, Disk operations, battery charging/drain states, and thermals.
-*   **Preferences HUD (Settings Overlay)**: 
-    *   **Themes**: Toggle between **Cyber Cyan**, **Toxic Emerald**, **Deep Violet**, and **Retro Amber**.
-    *   **Visibility**: Toggle individual modules (Git, Docker, Network topology) to adjust layouts.
-    *   **Battery Saver**: Restrict rendering to 30 FPS or disable particles/radar overlays entirely.
+![System Architect UI](docs/screenshot_ui.png)
 
 ---
 
-## 🛠️ Architecture
+## Overview
 
-The wallpaper is split into three main components:
+System Architect replaces your static wallpaper with a fully animated, data-driven dashboard. A lightweight **FastAPI backend** reads kernel interfaces (`/proc`, `/sys`, Docker socket, git) every second and streams telemetry over **WebSocket** to a **React/Vite frontend** rendered by **PyWebView** (GTK/WebKit2). The window is set to the `DESKTOP` WM type — it sits below every application window, behaves like a real wallpaper, and survives workspace switches.
 
-```mermaid
-graph TD
-    subgraph Linux OS Kernel
-        sysfs["/sys/class/hwmon (Thermals/Battery)"]
-        proc["/proc & /proc/uptime (CPU/Uptime/Processes)"]
-        sockets["Docker socket / Git command-line"]
-    end
+---
 
-    subgraph Backend Daemon (Python/FastAPI)
-        sys_collector["System Collector"]
-        dev_collector["Developer Collector"]
-        ws_server["WebSocket Server (:8000/ws/telemetry)"]
-        
-        sysfs --> sys_collector
-        proc --> sys_collector
-        sockets --> dev_collector
-        sys_collector --> ws_server
-        dev_collector --> ws_server
-    end
+## Screenshots
 
-    subgraph Frontend Client (React/R3F)
-        hook["useTelemetry Hook"]
-        reactor["Three.js Reactor (R3F)"]
-        hud["HUD Grid Panels"]
-        
-        ws_server -->|WebSocket Stream| hook
-        hook -->|Core Telemetry Packet| reactor
-        hook -->|Layout States| hud
-    end
+### Full Dashboard
 
-    subgraph Desktop Wrapper (PyWebView)
-        gui["GTK Desktop Window"]
-        gui -->|Loads| hud
-    end
+![System Architect Dashboard](docs/screenshot_ui.png)
+
+### Panel Breakdown
+
+| Panel | Contents |
+|---|---|
+| **Header** | Hostname, distro, kernel, uptime, live clock, streaming indicator |
+| **Left** | Dev Workstation (shells + IDEs), Git Telemetry, Docker Containers |
+| **Center** | System Load averages, Per-Core bars, Top Processes table, System Journal |
+| **Right** | Network Mesh Topology, Traffic I/O speeds, Activity Log |
+| **Bottom** | CPU core graph, RAM, Disk I/O, Thermals, Battery / Power Supply |
+
+---
+
+## Features
+
+### Real-Time Telemetry
+- **CPU** — total load %, per-core bars, frequency, 1m/5m/15m load averages
+- **Memory** — used/free/total, live sparklines
+- **Disk** — root partition usage, read/write throughput
+- **Network** — per-interface download/upload rates, animated mesh topology
+- **Thermals** — CPU + GPU temperatures with warning/critical color thresholds
+- **Battery** — charge %, charging state, adapter detection
+
+### Developer Workspace
+- Detects running **VS Code**, **Cursor**, and **JetBrains** IDEs via `/proc`
+- Scans open **terminal** instances
+- Reads **Git** repo status (branch, modified files, commits today, dirty state)
+- Polls **Docker** socket for running/total container counts
+
+### Process Monitor
+- Sorted process table with PID, name, CPU%, MEM%, and inline sparklines
+- Refreshes every 2 seconds from telemetry data
+
+### System Journal
+- Rolling live log stream (INFO / WARN / ERR) from systemd, kernel, thermal, and network sources
+
+### Theming & Settings
+- 4 color themes: **Cyber Cyan**, **Toxic Emerald**, **Deep Violet**, **Retro Amber**
+- Toggle individual panels (Git, Docker, Network)
+- Animation quality modes: **High / Low** (CRT scanlines, scan laser)
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Linux Kernel                             │
+│  /proc/stat  /proc/meminfo  /sys/class/hwmon  /proc/net/dev    │
+│  docker.sock  git CLI  /proc/<pid>/cmdline                      │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │  direct filesystem reads (no subprocesses)
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│             Backend — Python 3.10 / FastAPI / Uvicorn           │
+│                                                                 │
+│  collectors/                                                    │
+│    system.py   → CPU, Memory, Disk, Network, Temperature        │
+│    developer.py → Git, Docker, IDEs, Terminals                  │
+│                                                                 │
+│  services/telemetry_service.py  (1s polling loop)               │
+│  app/main.py   GET /health  WS /ws/telemetry                    │
+│                                                                 │
+│  Serves compiled frontend static files from ../frontend/dist    │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │  WebSocket (JSON, 1Hz)
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│            Frontend — React 18 / Vite / TypeScript              │
+│                                                                 │
+│  hooks/useTelemetry.ts   WS client + reconnect + fallback sim   │
+│  components/                                                    │
+│    LeftPanel.tsx   Git · Docker · IDEs                          │
+│    CenterPanel.tsx Load avg · Per-core · Processes · Journal    │
+│    RightPanel.tsx  Net topology SVG · Traffic · Activity log    │
+│    BottomPanel.tsx CPU · RAM · Disk · Thermals · Battery        │
+│    SettingsPanel.tsx Themes · Toggles · Quality                 │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │  loaded by
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│           Desktop Wrapper — PyWebView / GTK / WebKit2           │
+│                                                                 │
+│  scripts/webview_wrapper.py                                     │
+│    - Detects screen resolution via xrandr                       │
+│    - Creates borderless fullscreen WebKit2 window               │
+│    - Sets GTK hints: keep_below, skip_taskbar, sticky,          │
+│      DESKTOP type, no-focus, click-through input region         │
+│    - Watches xrandr for resolution changes and restarts         │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Setup & Installation
+## Requirements
 
-We provide an automated installation script that sets up a Python virtual environment, installs dependencies, compiles production frontend assets, and installs/starts a systemd user daemon.
+| Dependency | Version | Purpose |
+|---|---|---|
+| Python | ≥ 3.10 | Backend runtime |
+| Node.js | ≥ 18 | Frontend build toolchain |
+| npm | ≥ 9 | Package management |
+| GTK 3 + PyGObject | system | WebView window rendering |
+| WebKit2GTK | system | HTML/CSS/JS rendering engine |
+| python3-gi | system | GTK Python bindings |
+| libcairo2-dev | system | Click-through input shape mask |
 
-### 1. Run the Installer
-Clone this repository and run the installation script:
+### Install system dependencies (Ubuntu / Debian)
+
+```bash
+sudo apt update
+sudo apt install -y \
+  python3-gi python3-gi-cairo \
+  gir1.2-gtk-3.0 gir1.2-webkit2-4.1 \
+  libcairo2-dev libgirepository1.0-dev \
+  python3-venv python3-pip \
+  nodejs npm
+```
+
+---
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourname/system-architect.git
+cd system-architect
+```
+
+### 2. Run the automated installer
+
 ```bash
 chmod +x scripts/install.sh
 ./scripts/install.sh
 ```
 
-This script will:
-1. Create a Python virtual environment in `backend/venv` and install `fastapi`, `uvicorn`, `psutil`, `pywebview`, and `pydantic`.
-2. Install Node packages and compile the production frontend code into static assets.
-3. Generate a systemd user service: `~/.config/systemd/user/system-architect-wallpaper.service`.
-4. Start and enable the backend telemetry service to boot on login.
+The installer does the following:
 
-### 2. Launch the Desktop Live Wallpaper
-To launch the wallpaper as a borderless window placed directly on the desktop layer:
+1. Creates `backend/venv` with `--system-site-packages` (required for GTK access)
+2. Installs Python dependencies from `backend/requirements.txt`
+3. Installs Node packages and runs `npm run build` in `frontend/`
+4. Templates `scripts/system-architect-wallpaper.service` with real paths → writes to `~/.config/systemd/user/`
+5. Runs `systemctl --user enable --now system-architect-wallpaper.service`
+
+> **Important:** The venv **must** be created with `--system-site-packages` so that `python3-gi` (PyGObject) and `cairo` from the system are accessible. If you see `ModuleNotFoundError: No module named 'gi'`, your venv was created without this flag. Rebuild it:
+> ```bash
+> rm -rf backend/venv
+> python3 -m venv --system-site-packages backend/venv
+> backend/venv/bin/pip install -r backend/requirements.txt
+> ```
+
+### 3. Set up desktop autostart
+
 ```bash
-python3 scripts/webview_wrapper.py --fullscreen
+chmod +x scripts/setup_autostart.sh
+./scripts/setup_autostart.sh
 ```
 
-*Note: The script automatically applies GTK window hints (`DESKTOP` type, `keep_below`, `skip_taskbar`, `sticky`) to lock itself to your desktop background layer.*
+This creates `~/.config/autostart/system-architect-client.desktop` so the GUI wallpaper launches automatically on every GNOME login.
+
+### 4. Launch the wallpaper
+
+```bash
+backend/venv/bin/python scripts/webview_wrapper.py
+```
+
+The wrapper automatically:
+- Detects your screen resolution via `xrandr`
+- Waits for the backend to respond on `:8000` before opening the window
+- Sets GTK window hints to lock the window to the desktop layer
 
 ---
 
-## 🧪 Profiling & Footprint
+## Auto-Start on Login
 
-To ensure your machine remains responsive and saves battery, the metrics collection and rendering engines are highly optimized:
+After running both scripts, the full startup chain on login is:
 
-*   **Backend CPU usage**: **~1.3%** on a single thread. Avoids spawning subprocesses on every frame by scheduling IDE/Docker queries to 5s/15s intervals and using filesystem sysfs caches for CPU temperatures.
-*   **Backend Memory usage**: **~30MB - 48MB**. Highly optimized Python runtime utilizing FastAPI.
-*   **Frontend GPU usage**: Scaled according to Settings Drawer. Select **Low** or **Medium** settings on laptops to decrease WebGL tick overhead and maximize battery life.
+```
+Login
+ ├── systemd --user starts system-architect-wallpaper.service
+ │     └── uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+ │           └── serves /ws/telemetry WebSocket + static frontend
+ │
+ └── GNOME autostart runs system-architect-client.desktop
+       └── backend/venv/bin/python scripts/webview_wrapper.py
+             └── waits for :8000, then opens GTK desktop window
+```
+
+No manual steps required after the first setup.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
+system-architect/
 ├── backend/
 │   ├── app/
-│   │   ├── collectors/       # System & Developer metric collectors
-│   │   ├── models/           # Pydantic schemas
-│   │   ├── services/         # Metric aggregation loops
-│   │   └── main.py           # FastAPI server and WebSocket streams
-│   └── requirements.txt      # Python dependencies
+│   │   ├── collectors/
+│   │   │   ├── system.py       # CPU, memory, disk, network, thermals, battery
+│   │   │   └── developer.py    # Git, Docker, IDEs, terminal count
+│   │   ├── models/
+│   │   │   └── telemetry.py    # Pydantic response schemas
+│   │   ├── services/
+│   │   │   └── telemetry_service.py  # 1s polling aggregation loop
+│   │   ├── config.py           # Settings (poll interval, port, paths)
+│   │   └── main.py             # FastAPI app, /health, /ws/telemetry
+│   ├── requirements.txt
+│   └── venv/                   # Created by install.sh (gitignored)
+│
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # HUD Panels (Left, Right, Bottom, Settings)
-│   │   ├── hooks/            # WebSocket and State custom hooks
-│   │   ├── styles/           # Cyberpunk CSS scanlines and grid styles
-│   │   └── three/            # WebGL Reactor and radar models
-│   ├── package.json          # Node dependencies
-│   └── vite.config.ts        # Bundler configuration
+│   │   ├── components/
+│   │   │   ├── LeftPanel.tsx   # Dev workstation, Git, Docker
+│   │   │   ├── CenterPanel.tsx # Load avg, per-core, processes, journal
+│   │   │   ├── RightPanel.tsx  # Network topology, traffic, activity log
+│   │   │   ├── BottomPanel.tsx # CPU, RAM, disk, thermals, battery
+│   │   │   └── SettingsPanel.tsx # Theme, toggles, quality
+│   │   ├── hooks/
+│   │   │   └── useTelemetry.ts # WS client, reconnect, simulated fallback
+│   │   ├── styles/
+│   │   │   └── index.css       # Tailwind + CSS variables + scanline effects
+│   │   ├── App.tsx             # Layout grid (left / center / right / bottom)
+│   │   └── main.tsx
+│   ├── dist/                   # Built by npm run build (gitignored)
+│   ├── package.json
+│   └── vite.config.ts
+│
 ├── scripts/
-│   ├── install.sh            # Automated installer script
-│   ├── webview_wrapper.py    # PyWebView client window wrapper
-│   └── system-architect-wallpaper.service # Systemd unit template
-└── shared/
-    └── types/
-        └── telemetry.d.ts    # Typescript specifications
+│   ├── install.sh                         # One-shot installer
+│   ├── setup_autostart.sh                 # Creates ~/.config/autostart entry
+│   ├── webview_wrapper.py                 # PyWebView desktop window
+│   └── system-architect-wallpaper.service # Systemd unit template (tokens)
+│
+├── shared/
+│   └── types/
+│       └── telemetry.d.ts      # Shared TypeScript interface definitions
+│
+└── docs/
+    └── screenshot_ui.png
 ```
 
 ---
 
-## 🛠️ Development & Customization
+## Development
 
-If you want to customize panels or develop the frontend with hot-reload:
+### Start the backend (with hot-reload)
 
-1. Start the FastAPI backend server in debug mode:
-   ```bash
-   backend/venv/bin/uvicorn backend.app.main:app --reload
-   ```
-2. Start the Vite hot-reloading server:
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-3. Open the wrapper pointing to the dev server:
-   ```bash
-   python3 scripts/webview_wrapper.py --url http://localhost:5173
-   ```
+```bash
+backend/venv/bin/python -m uvicorn backend.app.main:app \
+  --host 127.0.0.1 --port 8000 --reload
+```
+
+### Start the frontend dev server
+
+```bash
+cd frontend
+npm run dev
+# → http://localhost:5173
+```
+
+### Point the webview at the dev server
+
+```bash
+backend/venv/bin/python scripts/webview_wrapper.py --url http://localhost:5173
+```
+
+### Build production frontend
+
+```bash
+cd frontend && npm run build
+# Output: frontend/dist/ — served automatically by FastAPI
+```
+
+---
+
+## Service Management
+
+```bash
+# Check backend service status
+systemctl --user status system-architect-wallpaper.service
+
+# View live backend logs
+journalctl --user -u system-architect-wallpaper.service -f
+
+# Restart after code changes
+systemctl --user restart system-architect-wallpaper.service
+
+# Disable autostart
+systemctl --user disable system-architect-wallpaper.service
+
+# Remove desktop autostart entry
+rm ~/.config/autostart/system-architect-client.desktop
+```
+
+---
+
+## Troubleshooting
+
+### `ModuleNotFoundError: No module named 'gi'`
+
+The venv was created without system site packages. GTK bindings (`python3-gi`) live in `/usr/lib/python3/dist-packages/` and are not pip-installable.
+
+```bash
+rm -rf backend/venv
+python3 -m venv --system-site-packages backend/venv
+backend/venv/bin/pip install -r backend/requirements.txt
+```
+
+### Systemd service shows `bad-setting` / `inactive (dead)`
+
+The service file still contains un-substituted template tokens (`{{WORKING_DIR}}`). Re-run the installer or substitute manually:
+
+```bash
+sed -e "s|{{WORKING_DIR}}|$(pwd)|g" \
+    -e "s|{{PYTHON_PATH}}|$(pwd)/backend/venv/bin/python|g" \
+    scripts/system-architect-wallpaper.service \
+    > ~/.config/systemd/user/system-architect-wallpaper.service
+
+systemctl --user daemon-reload
+systemctl --user enable --now system-architect-wallpaper.service
+```
+
+### Window appears on top of other windows / is not on desktop layer
+
+GTK window hints require a compositing window manager. Ensure GNOME Shell is running:
+
+```bash
+echo $XDG_CURRENT_DESKTOP   # should print GNOME
+echo $XDG_SESSION_TYPE      # should print x11 or wayland
+```
+
+> **Note:** On Wayland, `_NET_WM_WINDOW_TYPE_DESKTOP` may behave differently depending on the compositor. X11 (Xorg session) is fully supported.
+
+### Blank white window / WebKit rendering issue
+
+Set the DMA-buf renderer workaround (already set in `webview_wrapper.py`):
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 backend/venv/bin/python scripts/webview_wrapper.py
+```
+
+### Backend not responding at `:8000`
+
+```bash
+# Check if uvicorn is running
+systemctl --user status system-architect-wallpaper.service
+
+# Check what's on port 8000
+ss -tlnp | grep 8000
+
+# Test manually
+curl http://127.0.0.1:8000/health
+```
+
+---
+
+## Resource Footprint
+
+| Component | CPU | Memory |
+|---|---|---|
+| Backend (uvicorn) | ~1–3% (1 core) | ~35–50 MB |
+| Frontend (WebKit2) | ~3–8% | ~80–150 MB |
+| **Total** | **~4–11%** | **~115–200 MB** |
+
+Readings from a 4-core AMD Ryzen 5 3500U @ 2.4 GHz with 13.5 GB RAM.
+
+---
+
+## License
+
+MIT — use freely, attribution appreciated.

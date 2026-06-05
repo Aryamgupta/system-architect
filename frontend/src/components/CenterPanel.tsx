@@ -32,18 +32,18 @@ function buildProcs(cpuTotal: number, memPct: number): Proc[] {
   // Simulate a stable process list derived from real telemetry values
   const seed = (n: number, scale: number) => parseFloat((n * scale + Math.random() * 0.3).toFixed(1));
   return [
-    { name: "Xorg",              pid: 1122, cpu: seed(cpuTotal, 0.12), mem: seed(memPct, 0.06), status: "S" },
-    { name: "gnome-shell",       pid: 1288, cpu: seed(cpuTotal, 0.09), mem: seed(memPct, 0.08), status: "S" },
-    { name: "code",              pid: 3412, cpu: seed(cpuTotal, 0.18), mem: seed(memPct, 0.14), status: "S" },
-    { name: "uvicorn",           pid: 5080, cpu: seed(cpuTotal, 0.04), mem: seed(memPct, 0.03), status: "S" },
-    { name: "node",              pid: 4910, cpu: seed(cpuTotal, 0.07), mem: seed(memPct, 0.05), status: "S" },
-    { name: "WebKitWebProcess",  pid: 2731, cpu: seed(cpuTotal, 0.08), mem: seed(memPct, 0.10), status: "S" },
-    { name: "python3",           pid: 2729, cpu: seed(cpuTotal, 0.06), mem: seed(memPct, 0.04), status: "S" },
-    { name: "pulseaudio",        pid: 1401, cpu: seed(cpuTotal, 0.02), mem: seed(memPct, 0.02), status: "S" },
-    { name: "systemd",           pid: 1,    cpu: seed(cpuTotal, 0.01), mem: seed(memPct, 0.01), status: "S" },
-    { name: "tracker-miner",     pid: 1899, cpu: seed(cpuTotal, 0.03), mem: seed(memPct, 0.02), status: "I" },
-    { name: "dbus-daemon",       pid: 1056, cpu: seed(cpuTotal, 0.01), mem: seed(memPct, 0.01), status: "S" },
-    { name: "NetworkManager",    pid: 897,  cpu: seed(cpuTotal, 0.01), mem: seed(memPct, 0.01), status: "S" },
+    { name: "Xorg", pid: 1122, cpu: seed(cpuTotal, 0.12), mem: seed(memPct, 0.06), status: "S" },
+    { name: "gnome-shell", pid: 1288, cpu: seed(cpuTotal, 0.09), mem: seed(memPct, 0.08), status: "S" },
+    { name: "code", pid: 3412, cpu: seed(cpuTotal, 0.18), mem: seed(memPct, 0.14), status: "S" },
+    { name: "uvicorn", pid: 5080, cpu: seed(cpuTotal, 0.04), mem: seed(memPct, 0.03), status: "S" },
+    { name: "node", pid: 4910, cpu: seed(cpuTotal, 0.07), mem: seed(memPct, 0.05), status: "S" },
+    { name: "WebKitWebProcess", pid: 2731, cpu: seed(cpuTotal, 0.08), mem: seed(memPct, 0.10), status: "S" },
+    { name: "python3", pid: 2729, cpu: seed(cpuTotal, 0.06), mem: seed(memPct, 0.04), status: "S" },
+    { name: "pulseaudio", pid: 1401, cpu: seed(cpuTotal, 0.02), mem: seed(memPct, 0.02), status: "S" },
+    { name: "systemd", pid: 1, cpu: seed(cpuTotal, 0.01), mem: seed(memPct, 0.01), status: "S" },
+    { name: "tracker-miner", pid: 1899, cpu: seed(cpuTotal, 0.03), mem: seed(memPct, 0.02), status: "I" },
+    { name: "dbus-daemon", pid: 1056, cpu: seed(cpuTotal, 0.01), mem: seed(memPct, 0.01), status: "S" },
+    { name: "NetworkManager", pid: 897, cpu: seed(cpuTotal, 0.01), mem: seed(memPct, 0.01), status: "S" },
   ].sort((a, b) => b.cpu - a.cpu);
 }
 
@@ -68,18 +68,18 @@ function LoadBar({ val, max, label }: { val: number; max: number; label: string 
 interface LogEntry { ts: string; level: "INFO" | "WARN" | "ERR"; unit: string; msg: string }
 
 const LOG_POOL: Omit<LogEntry, "ts">[] = [
-  { level: "INFO", unit: "kernel",          msg: "CPU frequency scaling: 2.4 GHz" },
-  { level: "INFO", unit: "systemd",         msg: "Started user session for aryam" },
-  { level: "INFO", unit: "NetworkManager",  msg: "wlp3s0: link is connected (DHCP)" },
-  { level: "WARN", unit: "thermal",         msg: "CPU package temp approaching 90°C" },
-  { level: "INFO", unit: "uvicorn",         msg: "Application startup complete on :8000" },
-  { level: "INFO", unit: "dbus",            msg: "Activated service com.canonical.Unity" },
-  { level: "WARN", unit: "gnome-shell",     msg: "Extension 'dash-to-dock' slow startup" },
-  { level: "INFO", unit: "tracker",         msg: "Indexed 12 new files in ~/Documents" },
+  { level: "INFO", unit: "kernel", msg: "CPU frequency scaling: 2.4 GHz" },
+  { level: "INFO", unit: "systemd", msg: "Started user session for aryam" },
+  { level: "INFO", unit: "NetworkManager", msg: "wlp3s0: link is connected (DHCP)" },
+  { level: "WARN", unit: "thermal", msg: "CPU package temp approaching 90°C" },
+  { level: "INFO", unit: "uvicorn", msg: "Application startup complete on :8000" },
+  { level: "INFO", unit: "dbus", msg: "Activated service com.canonical.Unity" },
+  { level: "WARN", unit: "gnome-shell", msg: "Extension 'dash-to-dock' slow startup" },
+  { level: "INFO", unit: "tracker", msg: "Indexed 12 new files in ~/Documents" },
   { level: "INFO", unit: "systemd-journal", msg: "Journal flushed to /var/log/journal" },
-  { level: "INFO", unit: "git",             msg: "system-architect: 0 new commits since 17:00" },
-  { level: "ERR",  unit: "docker",          msg: "Cannot connect to daemon: socket inactive" },
-  { level: "INFO", unit: "udisks2",         msg: "Mounted /dev/sda1 at /boot/efi" },
+  { level: "INFO", unit: "git", msg: "system-architect: 0 new commits since 17:00" },
+  { level: "ERR", unit: "docker", msg: "Cannot connect to daemon: socket inactive" },
+  { level: "INFO", unit: "udisks2", msg: "Mounted /dev/sda1 at /boot/efi" },
 ];
 
 const CenterPanel: React.FC<CenterPanelProps> = ({ telemetry }) => {
@@ -87,19 +87,17 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ telemetry }) => {
   const cores = cpu.cores || 4;
 
   // Simulated load averages derived from cpu.usage
-  const load1  = parseFloat(((cpu.usage / 100) * cores * 0.95).toFixed(2));
-  const load5  = parseFloat(((cpu.usage / 100) * cores * 0.80).toFixed(2));
+  const load1 = parseFloat(((cpu.usage / 100) * cores * 0.95).toFixed(2));
+  const load5 = parseFloat(((cpu.usage / 100) * cores * 0.80).toFixed(2));
   const load15 = parseFloat(((cpu.usage / 100) * cores * 0.65).toFixed(2));
 
   const [procs, setProcs] = useState<Proc[]>(() => buildProcs(cpu.usage, memory.percentage));
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [tick, setTick] = useState(0);
 
   // Refresh process list every 2s
   useEffect(() => {
     const t = setInterval(() => {
       setProcs(buildProcs(cpu.usage, memory.percentage));
-      setTick(n => n + 1);
     }, 2000);
     return () => clearInterval(t);
   }, [cpu.usage, memory.percentage]);
@@ -132,8 +130,8 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ telemetry }) => {
           <span className="text-[9px] text-text-dim">{cores} CORE · {(cpu.frequency / 1000).toFixed(2)} GHz</span>
         </div>
         <div className="flex flex-col gap-2">
-          <LoadBar val={load1}  max={cores} label="LOAD  1m" />
-          <LoadBar val={load5}  max={cores} label="LOAD  5m" />
+          <LoadBar val={load1} max={cores} label="LOAD  1m" />
+          <LoadBar val={load5} max={cores} label="LOAD  5m" />
           <LoadBar val={load15} max={cores} label="LOAD 15m" />
         </div>
         <div className="grid grid-cols-3 gap-1.5 pt-1 font-mono text-[9px] text-center border-t border-white/5">
