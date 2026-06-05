@@ -69,86 +69,70 @@ export const RightPanel: React.FC<RightPanelProps> = ({ telemetry, showNetwork }
     <div className="flex flex-col gap-4 h-full">
       {/* Topology Graph */}
       <div className="hud-panel p-4 flex-1 flex flex-col min-h-0">
-        <div className="hud-header text-sm tracking-wider font-bold mb-3 flex items-center justify-between">
+        <div className="hud-header text-xs tracking-wider font-bold mb-3 flex items-center justify-between whitespace-nowrap">
           <div className="flex items-center gap-2">
-            <Network className="w-4 h-4 text-primary" style={{ color: "var(--color-primary)" }} />
-            <span>CONNECTION TOPOLOGY</span>
+            <Network className="w-3.5 h-3.5 text-primary" style={{ color: "var(--color-primary)" }} />
+            <span>NET TOPOLOGY</span>
           </div>
-          <span className="text-[10px] font-mono text-text-dim">MESH MAPPED</span>
+          <span className="text-[9px] font-mono text-text-dim">MESH MAPPED</span>
         </div>
-
         {/* Dynamic SVG Vector Map */}
-        <div className="flex-1 min-h-[220px] relative border border-primary/5 rounded bg-black/40 overflow-hidden flex items-center justify-center">
-          <svg viewBox="0 0 320 280" className="w-full h-full max-h-[300px]">
-            {/* Definitions for gradients/markers */}
+        <div className="flex-1 min-h-0 relative border border-primary/5 rounded bg-black/40 overflow-hidden flex items-center justify-center">
+          <svg viewBox="0 0 200 160" className="w-full h-full" style={{ maxHeight: "100%" }}>
             <defs>
-              <radialGradient id="glow-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.4" />
+              <radialGradient id="topo-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.5" />
                 <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
               </radialGradient>
-              <filter id="glow-filter">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
+              <filter id="topo-f" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
             </defs>
 
-            {/* Connection Edges */}
-            {/* Host (160, 140) to Internet (260, 60) */}
-            <path d="M160,140 L260,60" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="5,5" className="opacity-40" />
-            <path d="M160,140 L260,60" stroke="var(--color-primary)" strokeWidth="1.5" strokeDasharray="8,20" strokeDashoffset="0" className="opacity-70 filter-[url(#glow-filter)]" style={{ animation: `spin-slow ${flowDuration}s infinite linear reverse` }} />
+            {/* ── Edges: hub(100,80) → satellites ── */}
+            <line x1="100" y1="80" x2="170" y2="22" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4,4" opacity="0.4" />
+            <line x1="100" y1="80" x2="170" y2="22" stroke="var(--color-primary)" strokeWidth="1" strokeDasharray="6,16" opacity="0.7"
+              style={{ animation: `spin-slow ${flowDuration}s linear infinite reverse` }} />
 
-            {/* Host (160, 140) to Docker (60, 220) */}
-            <path d="M160,140 L60,220" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="5,5" className="opacity-40" />
-            <path d="M160,140 L60,220" stroke="var(--color-primary)" strokeWidth="1.5" strokeDasharray="10,15" strokeDashoffset="0" className="opacity-70" style={{ animation: `spin-slow ${flowDuration * 1.5}s infinite linear` }} />
+            <line x1="100" y1="80" x2="30" y2="22" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4,4" opacity="0.4" />
+            <line x1="100" y1="80" x2="30" y2="22" stroke="var(--color-primary)" strokeWidth="1" strokeDasharray="5,18" opacity="0.7"
+              style={{ animation: `spin-slow ${flowDuration * 1.8}s linear infinite` }} />
 
-            {/* Host (160, 140) to Git (60, 60) */}
-            <path d="M160,140 L60,60" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="5,5" className="opacity-40" />
-            <path d="M160,140 L60,60" stroke="var(--color-primary)" strokeWidth="1.5" strokeDasharray="6,25" strokeDashoffset="0" className="opacity-70" style={{ animation: `spin-slow ${flowDuration * 2}s infinite linear reverse` }} />
+            <line x1="100" y1="80" x2="30" y2="138" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4,4" opacity="0.4" />
+            <line x1="100" y1="80" x2="30" y2="138"
+              stroke={telemetry.developer.docker.status !== "inactive" ? "var(--color-primary)" : "#52525b"}
+              strokeWidth="1" strokeDasharray="7,14" opacity="0.6"
+              style={{ animation: `spin-slow ${flowDuration * 1.3}s linear infinite reverse` }} />
 
-            {/* Host (160, 140) to Local API (260, 220) */}
-            <path d="M160,140 L260,220" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="5,5" className="opacity-40" />
-            <path d="M160,140 L260,220" stroke="var(--color-primary)" strokeWidth="1.5" strokeDasharray="8,12" strokeDashoffset="0" className="opacity-70" style={{ animation: `spin-slow ${flowDuration * 1.2}s infinite linear` }} />
+            <line x1="100" y1="80" x2="170" y2="138" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4,4" opacity="0.4" />
+            <line x1="100" y1="80" x2="170" y2="138" stroke="var(--color-primary)" strokeWidth="1" strokeDasharray="8,12" opacity="0.7"
+              style={{ animation: `spin-slow ${flowDuration * 1.1}s linear infinite` }} />
 
-            {/* Docker (60, 220) to Local API (260, 220) */}
-            <path d="M60,220 L260,220" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4,8" className="opacity-25" />
+            {/* ── Glow + HOST hub ── */}
+            <circle cx="100" cy="80" r="18" fill="url(#topo-glow)" className="animate-pulse" />
+            <circle cx="100" cy="80" r="7" fill="var(--color-primary)" filter="url(#topo-f)" />
+            <circle cx="100" cy="80" r="11" stroke="var(--color-primary)" strokeWidth="0.8" fill="none" className="animate-ping" />
+            <text x="100" y="69" textAnchor="middle" fill="var(--color-text)" fontSize="6" fontFamily="var(--font-mono)" fontWeight="bold">LOCAL_HOST</text>
 
-            {/* Pulsing Glow Rings behind Nodes */}
-            <circle cx="160" cy="140" r="22" fill="url(#glow-grad)" className="animate-pulse" />
-            <circle cx="260" cy="60" r="15" fill="url(#glow-grad)" className="animate-pulse opacity-50" />
-            <circle cx="60" cy="60" r="15" fill="url(#glow-grad)" className="animate-pulse opacity-50" />
+            {/* ── Satellite nodes ── */}
+            <circle cx="170" cy="22" r="5" fill="var(--color-secondary)" />
+            <circle cx="170" cy="22" r="8" stroke="var(--color-secondary)" strokeWidth="0.6" fill="none" opacity="0.5" />
+            <text x="170" y="13" textAnchor="middle" fill="var(--color-text-dim)" fontSize="5.5" fontFamily="var(--font-mono)">GATEWAY</text>
 
-            {/* Node Points */}
-            {/* Host Center */}
-            <circle cx="160" cy="140" r="8" fill="var(--color-primary)" filter="url(#glow-filter)" className="cursor-pointer" />
-            <circle cx="160" cy="140" r="12" stroke="var(--color-primary)" strokeWidth="1" fill="none" className="animate-ping" />
+            <circle cx="30" cy="22" r="5" fill="var(--color-secondary)" />
+            <text x="30" y="13" textAnchor="middle" fill="var(--color-text-dim)" fontSize="5.5" fontFamily="var(--font-mono)">VCS_GIT</text>
 
-            {/* Internet Node */}
-            <circle cx="260" cy="60" r="6" fill="var(--color-secondary)" />
-            <circle cx="260" cy="60" r="10" stroke="var(--color-secondary)" strokeWidth="0.7" fill="none" className="opacity-50" />
+            <circle cx="30" cy="138" r="5"
+              fill={telemetry.developer.docker.status !== "inactive" ? "var(--color-primary)" : "#3f3f46"} />
+            <text x="30" y="151" textAnchor="middle" fill="var(--color-text-dim)" fontSize="5.5" fontFamily="var(--font-mono)">DOCKER</text>
 
-            {/* Git Node */}
-            <circle cx="60" cy="60" r="6" fill="var(--color-secondary)" />
-
-            {/* Docker Node */}
-            <circle cx="60" cy="220" r="6" fill={telemetry.developer.docker.status !== "inactive" ? "var(--color-primary)" : "#3f3f46"} />
-
-            {/* Local Web Server Node */}
-            <circle cx="260" cy="220" r="6" fill="var(--color-primary)" />
-
-            {/* Node Labels */}
-            <text x="160" y="122" textAnchor="middle" fill="var(--color-text)" fontSize="8.5" fontFamily="var(--font-mono)" fontWeight="bold">LOCAL_HOST</text>
-            <text x="260" y="44" textAnchor="middle" fill="var(--color-text-dim)" fontSize="8" fontFamily="var(--font-mono)">GATEWAY_WAN</text>
-            <text x="60" y="44" textAnchor="middle" fill="var(--color-text-dim)" fontSize="8" fontFamily="var(--font-mono)">VCS_GIT</text>
-            <text x="60" y="238" textAnchor="middle" fill="var(--color-text-dim)" fontSize="8" fontFamily="var(--font-mono)">DOCKER_DAEMON</text>
-            <text x="260" y="238" textAnchor="middle" fill="var(--color-text-dim)" fontSize="8" fontFamily="var(--font-mono)">LOCAL_API</text>
+            <circle cx="170" cy="138" r="5" fill="var(--color-primary)" />
+            <text x="170" y="151" textAnchor="middle" fill="var(--color-text-dim)" fontSize="5.5" fontFamily="var(--font-mono)">LOCAL_API</text>
           </svg>
 
-          {/* Network Traffic floating HUD badges */}
-          <div className="absolute top-2 left-2 flex gap-1 font-mono text-[9px] bg-black/60 px-1.5 py-0.5 rounded border border-white/5 text-text-dim">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 self-center animate-pulse" />
+          <div className="absolute top-2 left-2 flex items-center gap-1 font-mono text-[9px] bg-black/60 px-1.5 py-0.5 rounded border border-white/5 text-text-dim">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>SECURE LINK</span>
           </div>
         </div>
@@ -156,10 +140,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({ telemetry, showNetwork }
 
       {/* Network Traffic Speeds */}
       <div className="hud-panel p-4 flex flex-col font-mono text-xs gap-3">
-        <div className="hud-header text-sm tracking-wider font-bold mb-1 flex items-center justify-between">
+        <div className="hud-header text-xs tracking-wider font-bold mb-1 flex items-center justify-between whitespace-nowrap">
           <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" style={{ color: "var(--color-primary)" }} />
-            <span>TRAFFIC INDICATION</span>
+            <Globe className="w-3.5 h-3.5 text-primary" style={{ color: "var(--color-primary)" }} />
+            <span>TRAFFIC I/O</span>
           </div>
         </div>
 
@@ -192,21 +176,21 @@ export const RightPanel: React.FC<RightPanelProps> = ({ telemetry, showNetwork }
 
       {/* Console log activity stream */}
       <div className="hud-panel p-4 flex-1 flex flex-col min-h-0">
-        <div className="hud-header text-sm tracking-wider font-bold mb-3 flex items-center justify-between">
+        <div className="hud-header text-xs tracking-wider font-bold mb-3 flex items-center justify-between whitespace-nowrap">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary" style={{ color: "var(--color-primary)" }} />
-            <span>METRIC ACTIVITY LOG</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-primary" style={{ color: "var(--color-primary)" }} />
+            <span>ACTIVITY LOG</span>
           </div>
           <span className="w-2.5 h-2.5 rounded-full border border-primary/40 flex items-center justify-center">
             <Server className="w-1.5 h-1.5 text-primary" style={{ color: "var(--color-primary)" }} />
           </span>
         </div>
 
-        <div className="flex-1 font-mono text-[10px] text-text-dim overflow-y-auto space-y-1.5 pr-1 select-text">
+        <div className="flex-1 font-mono text-[9px] text-text-dim overflow-y-auto space-y-1 pr-1 select-text">
           {logs.map((log, idx) => (
-            <div key={idx} className="flex gap-2 leading-relaxed border-b border-white/3 pb-1 border-dotted last:border-b-0">
-              <span className="text-primary opacity-50 shrink-0" style={{ color: "var(--color-primary)" }}>[{log.time}]</span>
-              <span className={`shrink-0 font-bold ${
+            <div key={idx} className="flex items-center gap-1.5 leading-relaxed border-b border-white/3 pb-1 border-dotted last:border-b-0 overflow-hidden">
+              <span className="opacity-50 shrink-0" style={{ color: "var(--color-primary)" }}>{log.time}</span>
+              <span className={`shrink-0 font-bold w-7 ${
                 log.type === "NET" ? "text-secondary" : log.type === "SYS" ? "text-primary" : "text-amber-500"
               }`}
               style={{
@@ -214,7 +198,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ telemetry, showNetwork }
               }}>
                 {log.type}
               </span>
-              <span className="text-text break-all">{log.msg}</span>
+              <span className="text-text truncate">{log.msg}</span>
             </div>
           ))}
         </div>

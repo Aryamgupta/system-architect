@@ -204,7 +204,7 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({ telemetry }) => {
 
               {/* Text info */}
               <div className="flex-1">
-                <div className="text-sm font-bold text-text">{battery.percentage}%</div>
+                <div className="text-sm font-bold text-text">{Math.round(battery.percentage!)}%</div>
                 <div className="text-[9px] text-text-dim">
                   {battery.charging ? "Adapter Connected" : `${formatTime(battery.remaining_time)} Left`}
                 </div>

@@ -31,7 +31,7 @@ fi
 # 1. Create Python virtual environment
 echo -e "[+] Setting up isolated Python virtual environment in backend/venv..."
 cd "$PROJECT_ROOT"
-python3 -m venv backend/venv
+python3 -m venv --system-site-packages backend/venv
 
 # Activate venv and install dependencies
 echo -e "[+] Installing backend Python dependencies..."
